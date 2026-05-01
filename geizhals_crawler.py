@@ -23,11 +23,92 @@ SUPABASE_TABLE = "preise_at"
 # ----------------------------------------------------------------
 # ADD OR REMOVE URLS HERE
 URLS = [
-    "https://geizhals.at/philips-42oled810-a3479363.html",
-    "https://geizhals.at/philips-48oled810-a3479438.html",
-    "https://geizhals.at/philips-55oled810-a3479489.html",
-    "https://geizhals.at/philips-65oled810-a3479563.html",
+    "https://geizhals.at/philips-oled-77oled950-a3538878.html",
+    "https://geizhals.at/philips-77oled910-a3516738.html",
+    "https://geizhals.at/philips-oled-65oled950-a3538544.html",
+    "https://geizhals.at/philips-65oled910-a3516720.html",
+    "https://geizhals.at/philips-55oled910-a3516642.html",
     "https://geizhals.at/philips-77oled810-a3479575.html",
+    "https://geizhals.at/philips-65oled850-a3525216.html",
+    "https://geizhals.at/philips-65oled810-a3479563.html",
+    "https://geizhals.at/philips-55oled850-a3525157.html",
+    "https://geizhals.at/philips-55oled810-a3479489.html",
+    "https://geizhals.at/philips-48oled810-a3479438.html",
+    "https://geizhals.at/philips-42oled810-a3479363.html",
+    "https://geizhals.at/philips-77oled760-a3510646.html",
+    "https://geizhals.at/philips-65oled760-a3510639.html",
+    "https://geizhals.at/philips-55oled760-a3510629.html",
+    "https://geizhals.at/philips-48oled760-a3510550.html",
+    "https://geizhals.at/philips-85mled910-a3525875.html",
+    "https://geizhals.at/philips-the-xtra-75mled950-a3539838.html",
+    "https://geizhals.at/philips-75mled910-a3525863.html",
+    "https://geizhals.at/philips-the-xtra-65mled950-a3539778.html",
+    "https://geizhals.at/philips-65mled910-a3525800.html",
+    "https://geizhals.at/philips-55mled910-a3525741.html",
+    "https://geizhals.at/philips-75mled810-a3539296.html",
+    "https://geizhals.at/philips-65mled810-a3539197.html",
+    "https://geizhals.at/philips-55mled810-a3539152.html",
+    "https://geizhals.at/philips-the-one-65pus9080-a3516911.html",
+    "https://geizhals.at/philips-the-one-55pus9080-a3516880.html",
+    "https://geizhals.at/philips-the-one-50pus9080-a3516867.html",
+    "https://geizhals.at/philips-the-one-43pus9080-a3516775.html",
+    "https://geizhals.at/philips-the-one-65pus9060-a3529679.html",
+    "https://geizhals.at/philips-the-one-55pus9060-a3529668.html",
+    "https://geizhals.at/philips-the-one-50pus9060-a3529657.html",
+    "https://geizhals.at/philips-the-one-43pus9060-a3529625.html",
+    "https://geizhals.at/philips-the-one-85pus9000-a3538955.html",
+    "https://geizhals.at/philips-the-one-75pus9000-a3440013.html",
+    "https://geizhals.at/philips-the-one-65pus9000-a3439986.html",
+    "https://geizhals.at/philips-the-one-55pus9000-a3437870.html",
+    "https://geizhals.at/philips-the-one-50pus9000-a3437859.html",
+    "https://geizhals.at/philips-the-one-43pus9000-a3437839.html",
+    "https://geizhals.at/philips-qled-65pus8600-a3500905.html",
+    "https://geizhals.at/philips-qled-55pus8600-a3443426.html",
+    "https://geizhals.at/philips-43pus8600-a3437584.html",
+    "https://geizhals.at/philips-65pus8550-a3441043.html",
+    "https://geizhals.at/philips-55pus8550-a3441031.html",
+    "https://geizhals.at/philips-50pus8550-a3441001.html",
+    "https://geizhals.at/philips-43pus8550-a3440993.html",
+    "https://geizhals.at/philips-qled-85pus8500-a3443792.html",
+    "https://geizhals.at/philips-qled-75pus8500-a3443759.html",
+    "https://geizhals.at/philips-qled-65pus8500-a3443742.html",
+    "https://geizhals.at/philips-qled-55pus8500-a3443664.html",
+    "https://geizhals.at/philips-qled-50pus8500-a3443651.html",
+    "https://geizhals.at/philips-qled-43pus8500-a3443633.html",
+    "https://geizhals.at/6181836761",
+    "https://geizhals.at/6244823622",
+    "https://geizhals.at/philips-65pus8400-a3540352.html",
+    "https://geizhals.at/philips-55pus8400-a3540347.html",
+    "https://geizhals.at/philips-50pus8400-a3540341.html",
+    "https://geizhals.at/philips-43pus8400-a3540321.html",
+    "https://geizhals.at/philips-65pus8000-a3443277.html",
+    "https://geizhals.at/philips-55pus8000-a3443266.html",
+    "https://geizhals.at/philips-50pus8000-a3443244.html",
+    "https://geizhals.at/philips-43pus8000-a3443208.html",
+    "https://geizhals.at/philips-75pus7800-a3439680.html",
+    "https://geizhals.at/philips-65pus7800-a3439670.html",
+    "https://geizhals.at/philips-55pus7800-a3439665.html",
+    "https://geizhals.at/philips-50pus7800-a3439656.html",
+    "https://geizhals.at/philips-43pus7800-a3439631.html",
+    "https://geizhals.at/philips-75pus7000-a3437820.html",
+    "https://geizhals.at/philips-65pus7000-a3437819.html",
+    "https://geizhals.at/philips-55pus7000-a3437811.html",
+    "https://geizhals.at/philips-50pus7000-a3437803.html",
+    "https://geizhals.at/philips-43pus7000-a3437761.html",
+    "https://geizhals.at/philips-32pfs6950-a3573108.html",
+    "https://geizhals.at/philips-32pfs6900-a3503305.html",
+    "https://geizhals.at/6456348500",
+    "https://geizhals.at/philips-40pfs6000-a3528105.html",
+    "https://geizhals.at/philips-32pfs6000-a3528080.html",
+    "https://geizhals.at/philips-32phs6000-a3528163.html",
+    "https://geizhals.at/philips-24phs6000-a3483457.html",
+    "https://geizhals.at/philips-43pfs5500-a3539495.html",
+    "https://geizhals.at/philips-32phs5500-a3539471.html",
+    "https://geizhals.at/philips-40pfs6050-a3754172.html",
+    "https://geizhals.at/philips-32pfs6050-a3754142.html",
+    "https://geizhals.at/6508817898",
+    "https://geizhals.at/philips-40pqs6901-a3753741.html",
+    "https://geizhals.at/philips-32pqs6901-a3753777.html",
 ]
 # ----------------------------------------------------------------
 
@@ -311,7 +392,7 @@ class GeizhalsKrawler:
             try:
                 print(f"Loading: {url} (attempt {attempt + 1})")
                 self.driver.get(url)
-                self.random_delay(1.0, 2.0)
+                self.random_delay(2.0, 4.0)
 
                 self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
@@ -378,7 +459,12 @@ class GeizhalsKrawler:
                 print("  No offers extracted")
 
             if i < total - 1:
-                self.random_delay(0.5, 1.5)
+                # Longer pause every 20 URLs to avoid rate limiting
+                if (i + 1) % 20 == 0:
+                    print("  Pausing 30s every 20 URLs…")
+                    time.sleep(30)
+                else:
+                    self.random_delay(3.0, 6.0)
 
         return all_offers
 
