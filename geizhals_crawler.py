@@ -1,6 +1,8 @@
 import time
 import random
 import os
+import signal
+import sys
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -129,6 +131,7 @@ class GeizhalsKrawler:
     """Selenium-based crawler for geizhals.at product pages."""
 
     _instances = []
+    _atexit_registered = False
 
     def __init__(self, headless=True, max_retries=3):
         self.driver = None
@@ -137,7 +140,10 @@ class GeizhalsKrawler:
         self._cookie_dismissed = False
         self.setup_driver(headless)
         GeizhalsKrawler._instances.append(self)
-        atexit.register(self.cleanup_all_instances)
+        if not GeizhalsKrawler._atexit_registered:
+            atexit.register(GeizhalsKrawler.cleanup_all_instances)
+            signal.signal(signal.SIGTERM, lambda s, f: (GeizhalsKrawler.cleanup_all_instances(), sys.exit(0)))
+            GeizhalsKrawler._atexit_registered = True
 
     @classmethod
     def cleanup_all_instances(cls):
@@ -161,6 +167,10 @@ class GeizhalsKrawler:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-plugins")
+        chrome_options.add_argument("--no-zygote")
+        chrome_options.add_argument("--renderer-process-limit=1")
+        chrome_options.add_argument("--disk-cache-size=1")
+        chrome_options.add_argument("--media-cache-size=1")
         # NOTE: do NOT disable JavaScript — Geizhals hides body via CSS until JS runs
 
         # Anti-detection
@@ -182,6 +192,15 @@ class GeizhalsKrawler:
         except Exception as e:
             print(f"Error setting up driver: {e}")
             raise
+
+    def restart_driver(self):
+        try:
+            if self.driver:
+                self.driver.quit()
+        except:
+            pass
+        self.driver = None
+        self.setup_driver(headless=True)
 
     def random_delay(self, min_s: float = 0.5, max_s: float = 2.0):
         time.sleep(random.uniform(min_s, max_s))
@@ -407,6 +426,9 @@ class GeizhalsKrawler:
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
                 if attempt < self.max_retries - 1:
+                    if "Connection refused" in str(e) or "NewConnectionError" in str(e) or "ConnectionResetError" in str(e):
+                        print("Chrome crashed, restarting driver...")
+                        self.restart_driver()
                     self.random_delay(2.0, 4.0)
 
         print("All attempts failed for this URL")
