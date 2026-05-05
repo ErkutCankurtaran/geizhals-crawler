@@ -559,8 +559,8 @@ class GeizhalsKrawler:
             else:
                 print("  No offers extracted")
 
-            # Interim save every 50 URLs so progress isn't lost if the crawler is killed
-            if (i + 1) % 50 == 0 and unsaved_offers:
+            # Interim save every 20 URLs so progress isn't lost if the crawler is killed
+            if (i + 1) % 20 == 0 and unsaved_offers:
                 print(f"  Interim save: {len(unsaved_offers)} offers…")
                 self.save_to_supabase(unsaved_offers)
                 unsaved_offers = []
