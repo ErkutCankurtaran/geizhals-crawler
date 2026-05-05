@@ -3,6 +3,8 @@ import random
 import os
 import signal
 import sys
+import json
+import urllib.request
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,6 +23,51 @@ load_dotenv()
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 SUPABASE_TABLE = "preise_at"
+
+_WINDOW_SIZES = [
+    (1920, 1080), (1440, 900), (1366, 768),
+    (1536, 864), (1600, 900), (2560, 1440),
+]
+
+_UA_FALLBACK = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+]
+
+def _build_ua_pool() -> list:
+    try:
+        with urllib.request.urlopen(
+            "https://chromiumdash.appspot.com/fetch_releases?channel=Stable&platform=Windows&num=1",
+            timeout=5
+        ) as r:
+            data = json.loads(r.read())
+            v = str(data[0]['version']).split('.')[0]
+            v_prev = str(int(v) - 1)
+            print(f"Auto-detected Chrome version: {v}")
+            return [
+                f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v}.0.0.0 Safari/537.36",
+                f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v_prev}.0.0.0 Safari/537.36",
+                f"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v}.0.0.0 Safari/537.36",
+                f"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v_prev}.0.0.0 Safari/537.36",
+                f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v}.0.0.0 Safari/537.36 Edg/{v}.0.0.0",
+                f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{v}.0.0.0 Safari/537.36",
+            ]
+    except Exception:
+        print("Could not fetch Chrome version, using fallback UA pool")
+        return _UA_FALLBACK
+
+USER_AGENTS = _build_ua_pool()
+
+_BLOCK_SIGNALS = [
+    "access denied", "just a moment", "checking your browser",
+    "überprüfung", "sicherheitscheck", "verify you are human",
+    "captcha", "bot detected", "403 forbidden", "robot",
+    "sichere verbindung wird überprüft",
+]
 
 # ----------------------------------------------------------------
 # ADD OR REMOVE URLS HERE
@@ -165,22 +212,27 @@ class GeizhalsKrawler:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-plugins")
         chrome_options.add_argument("--no-zygote")
         chrome_options.add_argument("--renderer-process-limit=1")
         chrome_options.add_argument("--disk-cache-size=1")
         chrome_options.add_argument("--media-cache-size=1")
+        chrome_options.add_argument("--memory-pressure-off")
+        chrome_options.add_argument("--max_old_space_size=4096")
         # NOTE: do NOT disable JavaScript — Geizhals hides body via CSS until JS runs
 
         # Anti-detection
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option("useAutomationExtension", False)
-        chrome_options.add_argument(
-            "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
+
+        ua = random.choice(USER_AGENTS)
+        w, h = random.choice(_WINDOW_SIZES)
+        chrome_options.add_argument(f"--user-agent={ua}")
+        chrome_options.add_argument(f"--window-size={w},{h}")
+        print(f"Using UA: {ua[:60]}... | Window: {w}x{h}")
 
         try:
             self.driver = webdriver.Chrome(options=chrome_options)
@@ -201,6 +253,24 @@ class GeizhalsKrawler:
             pass
         self.driver = None
         self.setup_driver(headless=True)
+
+    def is_page_blocked(self) -> bool:
+        """Returns True if Geizhals served a bot-check or error page."""
+        try:
+            title = self.driver.title.lower()
+            # body.text may be empty if the anti-clickjack CSS is still active;
+            # fall back to innerHTML to catch bot-check pages that hide the body
+            body_el = self.driver.find_element(By.TAG_NAME, "body")
+            body_text = body_el.text.lower()
+            if not body_text:
+                body_text = body_el.get_attribute("innerHTML").lower()
+            for signal in _BLOCK_SIGNALS:
+                if signal in title or signal in body_text[:1000]:
+                    print(f"Blocked page detected: '{signal}' found")
+                    return True
+        except Exception:
+            pass
+        return False
 
     def random_delay(self, min_s: float = 0.5, max_s: float = 2.0):
         time.sleep(random.uniform(min_s, max_s))
@@ -407,16 +477,23 @@ class GeizhalsKrawler:
 
     def extract_product_info(self, url: str) -> List[ProductOffer]:
         """Load a Geizhals product page and extract all offers, with retries."""
+        # Append Geizhals params: nocookie=1 skips OneTrust banner; hloc=at forces AT offers
+        sep = "&" if "?" in url else "?"
+        load_url = url + sep + "nocookie=1&hloc=at"
+
         for attempt in range(self.max_retries):
             try:
                 print(f"Loading: {url} (attempt {attempt + 1})")
-                self.driver.get(url)
+                self.driver.get(load_url)
                 self.random_delay(2.0, 4.0)
 
                 self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-                # Dismiss cookie banner once per session
-                self.dismiss_cookie_banner()
+                if self.is_page_blocked():
+                    print("Bot-check page detected — waiting 10s and restarting driver...")
+                    time.sleep(10)
+                    self.restart_driver()
+                    continue
 
                 brand, sku = self.extract_brand_and_sku()
                 print(f"  Brand={brand}, SKU={sku}")
@@ -468,6 +545,7 @@ class GeizhalsKrawler:
 
     def crawl_multiple_products(self, urls: List[str]) -> List[ProductOffer]:
         all_offers: List[ProductOffer] = []
+        unsaved_offers: List[ProductOffer] = []
         total = len(urls)
         print(f"Starting crawl of {total} URLs…")
 
@@ -476,9 +554,16 @@ class GeizhalsKrawler:
             offers = self.extract_product_info(url)
             if offers:
                 all_offers.extend(offers)
+                unsaved_offers.extend(offers)
                 print(f"  Added {len(offers)} offers (running total: {len(all_offers)})")
             else:
                 print("  No offers extracted")
+
+            # Interim save every 50 URLs so progress isn't lost if the crawler is killed
+            if (i + 1) % 50 == 0 and unsaved_offers:
+                print(f"  Interim save: {len(unsaved_offers)} offers…")
+                self.save_to_supabase(unsaved_offers)
+                unsaved_offers = []
 
             if i < total - 1:
                 # Longer pause every 20 URLs to avoid rate limiting
@@ -487,6 +572,11 @@ class GeizhalsKrawler:
                     time.sleep(30)
                 else:
                     self.random_delay(3.0, 6.0)
+
+        # Save any remaining unsaved offers
+        if unsaved_offers:
+            print(f"  Final save: {len(unsaved_offers)} offers…")
+            self.save_to_supabase(unsaved_offers)
 
         return all_offers
 
